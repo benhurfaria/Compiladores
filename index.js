@@ -1,24 +1,359 @@
 var input = require("fs").readFileSync("stdin", "utf8");
 
-let line = input.split("\n");
+let fileLine = input.split("\n");
 
+for(let i = 0; i < fileLine.length; i++){
+    fileLine[i] += "\n";
+}
+
+let line = 0, column = 0;
+let liga = false;
 let hash  = {};
+let wordLine = "";
 
-
-function tokenScanner(obj){
+function tokenScanner(linhaCorrente){
     let state = 0;
-    let objeto = {};
-
-    if(!isNaN(obj)){
-        state = 1;
-        
+    let token = {};
+    const letters = "ABCDEFGHIJKLMNOPKRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
+    const digits = "0123456789".split("");
+    let word = "";
+    let isFloat = false;
+    for(let i = column; i < linhaCorrente.length; i++){
+        if(linhaCorrente[i] === "\n" && state === 0){
+            line++;
+            column = -1;
+        }
+        column++
+        if(state === 0){
+            if(linhaCorrente[i] === " " || linhaCorrente[i] === "\t" || linhaCorrente[i] === "\n" || linhaCorrente[i] === "\r"){
+                state = 0;
+            } else if(digits.includes(linhaCorrente[i])){
+                state = 1;
+                word = linhaCorrente[i];
+            } else if(letters.includes(linhaCorrente[i])){
+                state = 22;
+                word = linhaCorrente[i];
+            } else if(linhaCorrente[i] === "{"){
+                state = 25;
+                word = linhaCorrente[i];
+            } else if(linhaCorrente[i] === "<"){
+                state = 9;
+                word = linhaCorrente[i];
+            } else if(linhaCorrente[i] === "="){
+                state = 13;
+                word = linhaCorrente[i];
+            }else if(linhaCorrente[i] === ">"){
+                state = 14;
+                word = linhaCorrente[i];
+            } else if (linhaCorrente[i] === "+" || linhaCorrente[i] === "-" || linhaCorrente[i] === "*" || linhaCorrente[i] === "/"){
+                state = 15;
+                word = linhaCorrente[i];
+            } else if(linhaCorrente[i] === ";"){
+                state = 18;
+                word = linhaCorrente[i];
+            } else if(linhaCorrente[i] === ","){
+                state = 17;
+                word = linhaCorrente[i];
+            } else if( linhaCorrente[i] === '"'){
+                state = 19;
+                word = linhaCorrente[i];
+            } else if( linhaCorrente[i] === "("){
+                state = 24;
+                word = linhaCorrente[i];
+            } else if(linhaCorrente[i] === ")"){
+                state = 23;
+                word = linhaCorrente[i];
+            } else {
+                console.log(`ERRO - Caractere inválido linha ${line+1} coluna ${column}`);
+                token = {Classe: "ERRO", Lexema: word, Tipo: null}
+                state = 0;
+                word = "";
+                return token;
+            }
+        }else if(state === 1){
+            if(digits.includes(linhaCorrente[i])){
+                state = 7;
+                word += linhaCorrente[i];
+            }else if(linhaCorrente[i] === "."){
+                state = 2;
+                word += linhaCorrente[i];
+                isFloat = true;
+            } else if(linhaCorrente[i] === "E" || linhaCorrente[i] === "e"){
+                state = 4;
+                word += linhaCorrente[i];
+            } else{
+                token = {Classe: "NUM", Lexema: word, Tipo: "inteiro"};
+                state = 0;
+                word = "";
+                column--;
+                i--;
+                return token;
+            }
+        }else if(state === 2){
+            if(digits.includes(linhaCorrente[i])){
+                state = 3;
+                word += linhaCorrente[i];
+            }else{
+                token = {Classe: "ERRO", Lexema: word, Tipo: null};
+                state = 0;
+                word = "";
+                i--;
+                column--;
+                return token;
+            }
+        }else if(state === 3){
+            if(digits.includes(linhaCorrente[i])){
+                state = 3;
+                word += linhaCorrente[i];
+            } else if(linhaCorrente[i] === "E" || linhaCorrente[i] === "e"){
+                state = 4;
+                word += linhaCorrente[i];
+            } else{
+                token = {Classe: "NUM", Lexema: word, Tipo: isFloat?"real":"inteiro"};
+                isFloat = false;
+                state = 0;
+                word = "";
+                i--;
+                column--;
+                return token;
+            }
+        }else if(state === 4){
+            if(linhaCorrente[i] === "+" || linhaCorrente[i] === "-"){
+                state = 5;
+                word += linhaCorrente[i];
+            } else if (digits.includes(linhaCorrente[i])){
+                state = 6;
+                word += linhaCorrente[i];
+            }else{
+                token = {Classe: "Erro", Lexema: word, Tipo: null};
+                state =0;
+                word = "";
+                i--;
+                column--;
+                return token;
+            }
+        } else if(state === 5){
+            if(digits.includes(linhaCorrente[i])){
+                state = 6;
+                word += linhaCorrente[i];
+            } else{
+                token = {Classe: "Erro", Lexema: word, Tipo: null}
+                state = 0;
+                word = "";
+                i--;
+                column--;
+                return token;
+            }
+        }else if(state === 6){
+            if(digits.includes(linhaCorrente[i])){
+                state = 6;
+                word += linhaCorrente[i];
+            } else{
+                token = {Classe: "NUM", Lexema: word, Tipo: isFloat?"real":"inteiro"};
+                isFloat=false;
+                state = 0
+                word ="";
+                i--;
+                column--;
+                return token;
+            }
+        }else if(state === 7){
+            if(digits.includes(linhaCorrente[i])){
+                state = 7;
+                word += linhaCorrente[i];
+            } else if(linhaCorrente[i] === "."){
+                state = 8;
+                word += linhaCorrente[i];
+                isFloat=true;
+            }else {
+                token={Classe:"NUM", Lexema: word, Tipo: "inteiro"};
+                state = 0
+                word ="";
+                i--;
+                column--;
+                return token;
+            }
+        } else if(state === 8){
+            if(digits.includes(linhaCorrente[i])){
+                state = 6;
+                word += linhaCorrente[i];
+            }else{
+                token = {Classe: "ERRO", Lexema: word, Tipo: null};
+                state = 0;
+                word = "";
+                i--;
+                column--;
+                return token;
+            }
+        }else if(state === 9){
+            if(linhaCorrente[i] === ">"){
+                state = 10;
+                word += linhaCorrente[i];
+            }else if(linhaCorrente[i]==="="){
+                state = 12;
+                word += linhaCorrente[i];
+            }else if(linhaCorrente[i] === "-"){
+                state = 11;
+                word += linhaCorrente[i];
+            }else{
+                token = {Classe: "OPR", Lexema: word, Tipo: null};
+                state = 0;
+                i--;
+                column--;
+                return token;
+            }
+        }else if(state === 10){
+            token = {Classe: "OPR", Lexema: word, Tipo: null};
+            state = 0;
+            word = "";
+            i--;
+            column--;
+            return token;
+        }else if(state === 11){
+            token = {Classe: "RCB", Lexema: word, Tipo: null};
+            state = 0;
+            word = "";
+            i--;
+            column--;
+            return token;
+        }else if(state === 12){
+            token = {Classe: "OPR", Lexema: word, Tipo: null};
+            state = 0;
+            word = "";
+            i--;
+            column--;
+            return token;
+        }else if(state === 13){
+            token = {Classe: "OPR", Lexema: word, Tipo: null };
+            state = 0;
+            word = "";
+            i--;
+            column--;
+            return token;
+        }else if(state === 14){
+            if(state === "="){
+                state = 13;
+                word += linhaCorrente[i];
+            } else{
+                token = {Classe: "OPR", Lexema: word, Tipo: null};
+                state = 0;
+                word = "";
+                column--;
+                i--;
+                return token;
+            }
+        }else if(state === 15){
+            token = {Classe: "OPM", Lexema: word, Tipo: null};
+            state = 0;
+            word = "";
+            column--;
+            i--;
+            return token;
+        }else if(state === 17){
+            token = {Classe: "VIR", Lexema: word, Tipo: null};
+            state = 0;
+            word = "";
+            i--;
+            column--;
+            return token;
+        }else if(state === 18){
+            token = {Classe: "PT_V", Lexema: word, Tipo: null};
+            state = 0;
+            word = "";
+            i--;
+            column--;
+            return token;
+        }else if(state === 19){
+            if(linhaCorrente[i] === '"'){
+                state = 21;
+                word += linhaCorrente[i];
+            } else {
+                state = 20;
+                word += linhaCorrente[i];
+            }
+        }else if(state === 20){
+            if(linhaCorrente[i] === '"'){
+                state = 21;
+                word += linhaCorrente[i];
+            }else if(linhaCorrente[i+1] === undefined){
+                console.log(`ERRO - O literal não tem um endpoint, ${line+1}, coluna ${column}`);
+                token = {Classe: "LIT", Lexema: word, Tipo: null};
+                state = 0;
+                word = "";
+                i--;
+                column--;
+                return token;
+            }else{
+                state = 20;
+                word += linhaCorrente[i];
+            }
+        }else if(state === 21){
+            token = {Classe: "LIT", Lexema: word, Tipo: null};
+            state = 0;
+            i--;
+            column--;
+            word = "";
+            return token;
+        }else if(state === 22){
+            if(letters.includes(linhaCorrente[i])){
+                state = 22;
+                word += linhaCorrente[i];
+            } else{
+                token = {Classe: isKeyword(word) ? word: "ID", Lexema: word, Tipo: isKeyword(word)? word: null};
+                state = 0;
+                word = "";
+                i--;
+                column--;
+                return token;
+            }
+        }else if(state === 23){
+            token = {Classe: "FC_P", Lexema: word, Tipo: null};
+            state = 0;
+            word = "";
+            i--;
+            column--;
+            return token;
+        }else if(state === 24){
+            token = {Classe: "AB_P", Lexema: word, Tipo: null};
+            state = 0;
+            word = "";
+            i--;
+            column--;
+            return token;
+        }else if(state === 25){
+            if(linhaCorrente[i] === "}"){
+                state = 27;
+                word += linhaCorrente[i];
+            }else{
+                state = 26;
+                word += linhaCorrente[i];
+            }
+        }else if(state === 26){
+            if(linhaCorrente[i] === "}"){
+                state = 27;
+                word += linhaCorrente[i];
+            }else if(linhaCorrente[i+1] === undefined){
+                console.log(`ERRO - O Comentário não tem um endpoint, linha ${line+1}, coluna ${column}`);
+                token = {Classe: "Erro", Lexema: word, Tipo: null};
+                state = 0;
+                word = "";
+                i--;
+                column--;
+                return token;
+            }else{
+                state = 26;
+                word += linhaCorrente[i];
+            }
+        }else if(state === 27){
+            token = {Classe: "COMENTARIO", Lexema: word, Tipo: null};
+            state = 0;
+            word = "";
+            i--;
+            column--;
+            return token;
+        }
     }
-
-
-
-
-
-    return ;
+    return token;
 }
 
 function main(){
@@ -36,107 +371,28 @@ function main(){
     hash["inteiro"] = {Classe: "inteiro", Lexema: "inteiro", Tipo: "inteiro"};
     hash["literal"] = {Classe: "literal", Lexema: "literal", Tipo: "literal"};
     hash["real"] = {Classe: "real", Lexema: "real", Tipo: "real"};
-    const operadores_relacionais = ["=", ">=", "<=", ">", "<"];
-    for(let i = 0; i < line.length; i++){
-        let words = line[i].split("\"");
-        let atribution = false;
-
-        if(words[0] === "escreva "){
-            words[0] = words[0].slice(0,-1);
-            words[1] = "\""+ words[1] + "\"";
-        } else{
-            words = line[i].split(" ");
-        }
-
-
-        if(words[0] === "varfim;" || words[words.length-1] !== ";" && (words.length > 1) && !words[1].includes("(")){
-            words[words.length-1] = words[words.length-1].slice(0,-1);
-            words.push(";");
-        }
-
-        if(words[0].indexOf("<-") > 0){
-            words = words[0].split("<-");
-            words.splice(1,0, "<-");
-            words[words.length-1] = words[words.length-1].slice(0,-1);
-            words.push(";");
-            atribution = true;
-        }
-        
-        if(words[0]==="inteiro" || words[0]==="literal" || words[0]==="real"){
-            let variables = words[1].split(",");
-            for(let k = 1; k <= variables.length; k++){
-                words.splice(k,0, variables[k-1]);
-            }
-            words.pop();
-            words.pop();
-            words.push(";");
-        }
-
-        if(words[0].includes("(")){
-            let variabels = words[0].split("(");
-            variabels.splice(1,0,"(");
-            variabels[variabels.length-1] = variabels[variabels.length-1].slice(0,-1);
-            variabels.push(")");
-            words = variabels;
-        }
-
-        if(words[0] === "repita"){
-            let variabels = words[1].split("(");
-            variabels[0] = "(";
-            variabels[variabels.length-1] = variabels[variabels.length-1].slice(0,-1);
-            variabels.push(")");
-            words = words.slice(0,-1);
-            for(let p = 0; p < variabels.length; p++){
-                words.push(variabels[p]);
-            }
-        }
-
-        let flag = 0, first_op = 0;
-
-        if(words[0] === "") words.shift();
-        for(let j = 0; j < words.length; j++){
-            let variabels;
-
-            if(words[j].indexOf("=") >= 0 && flag === 0 && first_op === 0 && words[j][0] !== "\"" && !atribution){
-                let num = words[j].indexOf("=");
-                if(words[j][num-1] === "<") {
-                    variabels = words[j].split("<=");
-                    words[j] = variabels[0];
-                    words.splice(j+1, 0, "<=");
-                    words.splice(j+2, 0, variabels[1]);
-                }
-                if(words[j][num-1] === ">") {
-                    variabels = words[j].split(">=");
-                    console.log(variabels);
-                    words[j] = variabels[0];
-                    words.splice(j+1, 0, ">=");
-                    words.splice(j+2, 0, variabels[1]);
-                }
-                flag = 1;
-            }
-            if(words[j].indexOf(">") >= 0 && flag===0 && first_op === 0 && first_op === 0&& words[j][0] !== "\"" && !atribution){
-                variabels = words[j].split(">");
-                words[j] = variabels[0];
-                words.splice(j+1, 0, ">");
-                words.splice(j+2, 0, variabels[1]);
-                first_op = 1;
-            }
-            if(words[j].indexOf("<") >= 0 && flag===0 && first_op === 0 && first_op === 0&& words[j][0] !== "\"" && !atribution){
-                variabels = words[j].split("<");
-                words[j] = variabels[0];
-                words.splice(j+1, 0, "<");
-                words.splice(j+2, 0, variabels[1]);
-                first_op = 1;
-            }
-            console.log(words[j]);
-            tokenScanner(words[j]);
+    hash["EOF"] = {Classe: "EOF", Lexema: "EOF", Tipo: null};
+    let vectorToSaveInstances = []
+    while(line < fileLine.length){
+        wordLine = fileLine[line];
+        let obj = tokenScanner(wordLine);
+        if(Object.values(obj).length !==0){
+            console.log(`Classe: ${obj.Classe}, Lexema: ${obj.Lexema}, Tipo:${obj.Tipo}`);
+            vectorToSaveInstances.push({Classe: obj.Classe, Lexema: obj.Lexema, Tipo:obj.Tipo});
         }
     }
 
+    for(let i = 0; i < vectorToSaveInstances.length; i++){
+        hash[vectorToSaveInstances[i].Lexema] = {Classe: vectorToSaveInstances[i].Classe, Lexema: vectorToSaveInstances[i].Lexema, Tipo:vectorToSaveInstances[i].Tipo};
+    }
 
-
+    console.log(`Classe: ${hash["EOF"].Classe}, Lexema: ${hash["EOF"].Lexema}, Tipo:${hash["EOF"].Tipo}`)
     return;
 }
 
+function isKeyword(obj){
+    if(hash[obj] !== undefined) return true;
+    return false;
+}
 
 main();
