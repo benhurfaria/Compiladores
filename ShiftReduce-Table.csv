@@ -1,4 +1,4 @@
-,inicioargs,varinicio,varfim,pt_v,id,vir,inteiro,real,literal,leia,escreva,lit,num,rcb,opm,se,ab_p,fc_p,entao,opr,fimse,repita,fimrepita,fim,eof,P',P,V,LV,D,L,TIPO,ES,ARG,CMD,LD,OPRD,COND,CAB,EXP_R,CP,R,CABR,CPR,A
+,inicioprog,iniciovars,fimvars,pt_v,id,vir,inteiro,real,literal,leia,escreva,lit,num,rcb,opm,se,ab_p,fc_p,entao,opr,fimse,enquanto,fimenquanto,fimprog,eof,P',P,V,LV,D,L,TIPO,ES,ARG,CMD,LD,OPRD,COND,CAB,EXP_R,CP,R,CABR,CPR,A
 0,s2,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,e0,,1,,,,,,,,,,,,,,,,,,
 1,,,,,,,,,,,,,,,,,,,,,,,,,acc,,,,,,,,,,,,,,,,,,,,
 2,e4,s4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e4,e1,,,3,,,,,,,,,,,,,,,,,
